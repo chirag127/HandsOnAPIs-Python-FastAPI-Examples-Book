@@ -1,0 +1,58 @@
+# CI Workflow for HandsOnAPIs-Python-FastAPI-Examples-Book
+
+name: CI Workflow
+
+# Controls when the workflow will run
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    # Define the Python version to be used
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.10"
+
+    - name: Install uv (Package Installer)
+      run: |
+        curl -sSL https://uv-build.sh | sh
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+    - name: Install Dependencies
+      run: |
+        uv install --frozen-lockfile
+
+    - name: Lint with Ruff
+      run: |
+        uv run ruff check .
+
+    - name: Format with Ruff
+      run: |
+        uv run ruff format --check .
+
+    - name: Run Tests with Pytest
+      run: |
+        uv run pytest
+
+    # Example: Upload coverage report if coverage.py is configured
+    # This assumes you have coverage.py set up in your pytest configuration.
+    # You would also need to set up codecov.io or similar.
+    # - name: Upload Coverage Report
+    #   uses: codecov/codecov-action@v4
+    #   with:
+    #     token: ${{ secrets.CODECOV_TOKEN }} # Ensure you have this secret set in your GitHub repo settings
+    #     file: ./coverage.xml # Adjust if your coverage report has a different name or location
+    #     fail_ci_if_error: true
+
+    # Optional: Add steps for other checks or build processes if needed
+    # For example, static analysis tools or security vulnerability scans.
